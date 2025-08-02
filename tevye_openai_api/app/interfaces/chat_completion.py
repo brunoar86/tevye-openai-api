@@ -9,7 +9,7 @@ class ChatCompletionRequest(BaseModel):
     logit_bias: Optional[dict] = None
     logprobs: Optional[bool] = False
     max_completion_tokens: Optional[int] = 100
-    modalities: Optional[str] = ['text']
+    modalities: Optional[list] = ['text']
     n: Optional[int] = 1
     parallel_tool_calls: Optional[bool] = None
     prediction: Optional[dict] = None

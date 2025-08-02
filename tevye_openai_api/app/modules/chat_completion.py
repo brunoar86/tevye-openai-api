@@ -75,7 +75,8 @@ class ChatCompletion:
                         self.collect_usage_data(response)
                         return data
                     else:
-                        print(await response.text)
+                        response = await response.json()
+                        print('ERROR:   {}'.format(response['error']['message']))    # noqa: E501
             except aiohttp.ClientError as error:
                 print('Erro: {}'.format(error))
 
