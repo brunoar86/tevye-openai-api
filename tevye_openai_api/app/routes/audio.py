@@ -28,7 +28,8 @@ async def text_to_speech(input: TTSRequest,
                             content={"detail": error.detail})
 
     except Exception as error:
-        return JSONResponse(status_code=500, content=error)
+        return JSONResponse(status_code=500,
+                            content={"detail": error.detail})
 
 
 @router.post('/audio/upload', tags=['Audio'])
@@ -55,7 +56,8 @@ async def upload_audio(request: Request, response: Response,
         return JSONResponse(status_code=200, headers=headers, content=message)
 
     except Exception as error:
-        return JSONResponse(status_code=500, content=error)
+        return JSONResponse(status_code=500,
+                            content={"detail": error.detail})
 
 
 @router.post('/audio/transcriptions', tags=['Audio'])
@@ -74,4 +76,5 @@ async def speech_to_text(request: Request, response: Response,
                             content={"detail": error.detail})
 
     except Exception as error:
-        return JSONResponse(status_code=500, content=error)
+        return JSONResponse(status_code=500,
+                            content={"detail": error.detail})
