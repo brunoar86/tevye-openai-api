@@ -1,6 +1,8 @@
 import aiohttp
 import tiktoken
 
+from fastapi.exceptions import HTTPException
+
 from tevye_openai_api.app.settings.openai import project
 
 
@@ -69,14 +71,23 @@ class ChatCompletion:
             try:
                 async with session.post(url=req['url'], headers=req['headers'],
                                         json=req['payload']) as response:
+
                     if response.status == 200:
                         response = await response.json()
                         data = self.assemble_response_data(response)
                         self.collect_usage_data(response)
                         return data
+
+                    elif response.status == 400:
+                        response = await response.json()
+                        print('\033[31mERROR\033[0m:    {}'.format(response['error']['message']))    # noqa: E501
+                        raise HTTPException(status_code=400,
+                                            detail=response['error']['message']
+                                            )
                     else:
                         response = await response.json()
-                        print('ERROR:   {}'.format(response['error']['message']))    # noqa: E501
+                        print('\033[31mERROR\033[0m:    {}'.format(response['error']['message']))  # noqa: E501
+
             except aiohttp.ClientError as error:
                 print('Erro: {}'.format(error))
 

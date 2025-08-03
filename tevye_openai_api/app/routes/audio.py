@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Request, Response, Form, UploadFile, File
 from fastapi.responses import JSONResponse
+from fastapi.exceptions import HTTPException
 
 from tevye_openai_api.app.interfaces.text_to_speech import TTSRequest
 from tevye_openai_api.app.interfaces.speech_to_text import STTRequest
@@ -21,6 +22,10 @@ async def text_to_speech(input: TTSRequest,
         result = await tts.request(input)
 
         return JSONResponse(status_code=200, headers=headers, content=result)
+
+    except HTTPException as error:
+        return JSONResponse(status_code=error.status_code,
+                            content={"detail": error.detail})
 
     except Exception as error:
         return JSONResponse(status_code=500, content=error)
@@ -63,6 +68,10 @@ async def speech_to_text(request: Request, response: Response,
         result = await stt.request(input)
 
         return JSONResponse(status_code=200, headers=headers, content=result)
+
+    except HTTPException as error:
+        return JSONResponse(status_code=error.status_code,
+                            content={"detail": error.detail})
 
     except Exception as error:
         return JSONResponse(status_code=500, content=error)

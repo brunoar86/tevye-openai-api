@@ -57,6 +57,11 @@ class TextToSpeech:
                               .format(self.mp3_path))
 
                         return self.mp3_path
+
+                    elif response.status == 400:
+                        response = await response.json()
+                        print('\033[31mERROR\033[0m:    {}'.format(response['error']['message']))    # noqa: E501
+
                     else:
                         print('ERROR:    {}: {}'.format(response.status,
                                                         await response.text))
