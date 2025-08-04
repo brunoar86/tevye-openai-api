@@ -27,4 +27,4 @@ async def chat_completion(input: ChatCompletionRequest,
 
     except Exception as error:
         return JSONResponse(status_code=500,
-                            content={"detail": error.detail})
+                            content={"detail": error.args[0]})
