@@ -1,5 +1,7 @@
 from fastapi import APIRouter
 
+from tevye_openai_api.app.utils.logger import log
+
 router = APIRouter()
 
 
@@ -8,6 +10,7 @@ def live():
     '''
     Route to check liveness
     '''
+    log.info("Liveness check called")
     return {'message': 'Tevye OpenAI API is live!'}
 
 
@@ -16,4 +19,5 @@ def ready():
     '''
     Route to check readiness
     '''
+    log.info("Readiness check called")
     return {'message': 'Tevye OpenAI API is ready!'}

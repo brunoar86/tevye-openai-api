@@ -1,7 +1,10 @@
 import aiohttp
 import json
 
+from fastapi.exceptions import HTTPException
+
 from tevye_openai_api.app.settings.openai import project
+from tevye_openai_api.app.util.logger import log
 
 
 class SpeechToText:
@@ -14,6 +17,7 @@ class SpeechToText:
         self.mp3_path = 'tevye_openai_api/app/modules/stt/mp3/'
 
     def assemble_request(self):
+        log.debug("Assembling STT request", input=dict(self.input))
         url = 'https://api.openai.com/v1/audio/transcriptions'
 
         headers = {
@@ -40,6 +44,7 @@ class SpeechToText:
             'payload': form
         }
 
+        log.debug("Assembled STT request", req=req['payload'])
         return req
 
     async def request(self, input):
@@ -52,13 +57,23 @@ class SpeechToText:
             try:
                 async with session.post(url=req['url'], headers=req['headers'],
                                         data=req['payload']) as response:
+                    log.debug("STT request sent", status=response.status)
                     if response.status == 200:
                         response = await response.json()
+                        log.debug("STT response received", response=response)
                         return response
                     else:
                         status_code = response.status
                         response = await response.json()
-                        print('ERROR:    {}: {}'.format(status_code,
-                                                        response['error']))
+                        log.error("STT request failed",
+                                  status_code=status_code,
+                                  response=response['error'])
+                        raise HTTPException(status_code=status_code,
+                                            detail=response['error']['message']
+                                            )
+
             except aiohttp.ClientError as error:
-                print('ERROR:   {}'.format(error))
+                log.error("STT request failed due to client error",
+                          error=str(error))
+                raise HTTPException(status_code=500,
+                                    detail="STT request failed due to client error")    # noqa: E501

@@ -1,6 +1,9 @@
 import os
 import aiohttp
 
+from fastapi import HTTPException
+
+from tevye_openai_api.app.util.logger import log
 from tevye_openai_api.app.settings.openai import project
 
 
@@ -14,6 +17,7 @@ class TextToSpeech:
         self.mp3_path = 'tevye_openai_api/app/modules/tts/mp3/speech.mp3'
 
     def assemble_request(self):
+        log.debug("Assembling TTS request", input=dict(self.input))
         url = 'https://api.openai.com/v1/audio/speech'
 
         headers = {
@@ -35,6 +39,7 @@ class TextToSpeech:
             'payload': payload
         }
 
+        log.debug("Assembled TTS request", req=req['payload'])
         return req
 
     async def request(self, input):
@@ -47,23 +52,38 @@ class TextToSpeech:
             try:
                 async with session.post(url=req['url'], headers=req['headers'],
                                         json=req['payload']) as response:
+                    log.debug("TTS request sent", status=response.status)
                     if response.status == 200:
                         content = await response.read()
                         os.makedirs(os.path.dirname(self.mp3_path),
                                     exist_ok=True)
                         with open(self.mp3_path, 'wb') as file:
                             file.write(content)
-                        print('INFO:     Audio saved in: {}'
-                              .format(self.mp3_path))
+                        log.info("TTS response received",
+                                 file_path=self.mp3_path)
 
                         return self.mp3_path
 
                     elif response.status == 400:
                         response = await response.json()
-                        print('\033[31mERROR\033[0m:    {}'.format(response['error']['message']))    # noqa: E501
+                        log.error("TTS request failed",
+                                  status_code=response.status,
+                                  response=response['error']['message'])
+                        raise HTTPException(status_code=response.status,
+                                            detail=response['error']['message']
+                                            )
 
                     else:
-                        print('ERROR:    {}: {}'.format(response.status,
-                                                        await response.text))
+                        response = await response.json()
+                        log.error("TTS request failed",
+                                  status_code=response.status,
+                                  response=response['error']['message'])
+                        raise HTTPException(status_code=response.status,
+                                            detail=response['error']['message']
+                                            )
+
             except aiohttp.ClientError as error:
-                print('ERROR:   {}'.format(error))
+                log.error("TTS request failed due to client error",
+                          error=str(error))
+                raise HTTPException(status_code=500,
+                                    detail="TTS request failed due to client error")    # noqa: E501

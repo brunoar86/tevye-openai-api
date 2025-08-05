@@ -4,6 +4,7 @@ import tiktoken
 from fastapi.exceptions import HTTPException
 
 from tevye_openai_api.app.settings.openai import project
+from tevye_openai_api.app.util.logger import log
 
 
 class ChatCompletion:
@@ -15,6 +16,7 @@ class ChatCompletion:
         self.input = None
 
     def assemble_request(self):
+        log.debug("Assembling chat completion request", input=dict(self.input))
         url = 'https://api.openai.com/v1/chat/completions'
 
         headers = {
@@ -36,6 +38,7 @@ class ChatCompletion:
             'payload': payload
         }
 
+        log.debug("Assembled chat completion request", req=req['payload'])
         return req
 
     def assemble_response_data(self, response):
@@ -54,6 +57,7 @@ class ChatCompletion:
             'logprobs': logprobs
         }
 
+        log.debug("Assembled response data", data=data)
         return data
 
     def collect_usage_data(self, response):
@@ -71,25 +75,39 @@ class ChatCompletion:
             try:
                 async with session.post(url=req['url'], headers=req['headers'],
                                         json=req['payload']) as response:
-
+                    log.debug("Chat completion request sent",
+                              status=response.status)
                     if response.status == 200:
                         response = await response.json()
                         data = self.assemble_response_data(response)
                         self.collect_usage_data(response)
+                        log.debug("Chat completion response received",
+                                  response=data)
                         return data
 
                     elif response.status == 400:
                         response = await response.json()
-                        print('\033[31mERROR\033[0m:    {}'.format(response['error']['message']))    # noqa: E501
+                        log.error("Chat completion request failed",
+                                  status_code=response.status,
+                                  response=response['error']['message'])
+
                         raise HTTPException(status_code=400,
                                             detail=response['error']['message']
                                             )
                     else:
                         response = await response.json()
-                        print('\033[31mERROR\033[0m:    {}'.format(response['error']['message']))  # noqa: E501
+                        log.error("Chat completion request failed",
+                                  status_code=response.status,
+                                  response=response['error']['message'])
+                        raise HTTPException(status_code=response.status,
+                                            detail=response['error']['message']
+                                            )
 
             except aiohttp.ClientError as error:
-                print('Erro: {}'.format(error))
+                log.error("Chat completion request failed due to client error",
+                          error=str(error))
+                raise HTTPException(status_code=500,
+                                    detail="Chat completion request failed due to client error")  # noqa: E501
 
     def map_logit_bias(self, logit_bias: dict, model: str):
         if logit_bias is None:
