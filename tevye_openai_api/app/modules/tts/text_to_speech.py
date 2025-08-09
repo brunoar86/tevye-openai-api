@@ -1,10 +1,12 @@
 import os
 import aiohttp
+import structlog
 
 from fastapi import HTTPException
 
-from tevye_openai_api.app.util.logger import log
 from tevye_openai_api.app.settings.openai import project
+
+log = structlog.get_logger(__name__='text_to_speech module')
 
 
 class TextToSpeech:

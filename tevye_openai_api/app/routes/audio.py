@@ -1,8 +1,9 @@
+import structlog
+
 from fastapi import APIRouter, Request, Response, Form, UploadFile, File
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import HTTPException
 
-from tevye_openai_api.app.utils.logger import log
 from tevye_openai_api.app.interfaces.text_to_speech import TTSRequest
 from tevye_openai_api.app.interfaces.speech_to_text import STTRequest
 from tevye_openai_api.app.modules.tts.text_to_speech import TextToSpeech
@@ -11,6 +12,7 @@ from tevye_openai_api.app.modules.stt.speech_to_text import SpeechToText
 tts = TextToSpeech()
 stt = SpeechToText()
 router = APIRouter()
+log = structlog.get_logger(__name__='audio routes')
 
 
 @router.post('/audio/speech', tags=['Audio'])

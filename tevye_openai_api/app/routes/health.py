@@ -1,8 +1,9 @@
+import structlog
+
 from fastapi import APIRouter
 
-from tevye_openai_api.app.utils.logger import log
-
 router = APIRouter()
+log = structlog.get_logger(__name__='health routes')
 
 
 @router.get('/live', tags=['Health'])

@@ -1,14 +1,16 @@
+import structlog
+
 from fastapi import APIRouter, Request, Response
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import HTTPException
 
-from tevye_openai_api.app.utils.logger import log
 from tevye_openai_api.app.modules.chat_completion import ChatCompletion
 from tevye_openai_api.app.interfaces.chat_completion import ChatCompletionRequest    # noqa: E501
 
 
 router = APIRouter()
 chat = ChatCompletion()
+log = structlog.get_logger(__name__='chat completion routes')
 
 
 @router.post('/chat/completion', tags=['Chat Completion'])

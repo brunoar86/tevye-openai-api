@@ -1,10 +1,12 @@
 import aiohttp
 import tiktoken
+import structlog
 
 from fastapi.exceptions import HTTPException
 
 from tevye_openai_api.app.settings.openai import project
-from tevye_openai_api.app.util.logger import log
+
+log = structlog.get_logger(__name__='chat_completion module')
 
 
 class ChatCompletion:
