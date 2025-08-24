@@ -65,12 +65,11 @@ class SpeechToText:
                         log.debug("STT response received", response=response)
                         return response
                     else:
-                        status_code = response.status
                         response = await response.json()
                         log.error("STT request failed",
-                                  status_code=status_code,
+                                  status_code=response['status'],
                                   response=response['error'])
-                        raise HTTPException(status_code=status_code,
+                        raise HTTPException(status_code=response['status'],
                                             detail=response['error']['message']
                                             )
 

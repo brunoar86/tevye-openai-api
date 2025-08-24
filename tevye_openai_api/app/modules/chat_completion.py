@@ -90,7 +90,7 @@ class ChatCompletion:
                     elif response.status == 400:
                         response = await response.json()
                         log.error("Chat completion request failed",
-                                  status_code=response.status,
+                                  status_code=response['status'],
                                   response=response['error']['message'])
 
                         raise HTTPException(status_code=400,
@@ -99,9 +99,9 @@ class ChatCompletion:
                     else:
                         response = await response.json()
                         log.error("Chat completion request failed",
-                                  status_code=response.status,
+                                  status_code=response['status'],
                                   response=response['error']['message'])
-                        raise HTTPException(status_code=response.status,
+                        raise HTTPException(status_code=response['status'],
                                             detail=response['error']['message']
                                             )
 
